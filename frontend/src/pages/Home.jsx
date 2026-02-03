@@ -92,28 +92,27 @@ const Home = () => {
                             ))}
                         </div>
                         <div className="flex justify-between items-center text-gray-500 text-sm border-t border-gray-200 pt-2">
-                            onClick={() => dispatch(likePost(post._id))}
-                            className={`flex items-center space-x-1 hover:bg-gray-100 px-2 py-1 rounded ${(post.likes || []).find(like => like.user === user._id) ? 'text-blue-600 font-bold' : ''}`}
+                            <button
+                                onClick={() => dispatch(likePost(post._id))}
+                                className={`flex items-center space-x-1 hover:bg-gray-100 px-2 py-1 rounded ${(post.likes || []).find(like => like.user === user._id) ? 'text-blue-600 font-bold' : ''}`}
                             >
-                            <span>Like ({(post.likes || []).length})</span>
-                        </button>
-                        <button
-                            onClick={() => toggleComments(post._id)}
-                            className="flex items-center space-x-1 hover:bg-gray-100 px-2 py-1 rounded"
-                        >
-                            <span>Comment ({(post.comments || []).length})</span>
-                        </button>
-                    </div>
-                        {
-                        result.activeComments[post._id] && (
+                                <span>Like ({(post.likes || []).length})</span>
+                            </button>
+                            <button
+                                onClick={() => toggleComments(post._id)}
+                                className="flex items-center space-x-1 hover:bg-gray-100 px-2 py-1 rounded"
+                            >
+                                <span>Comment ({(post.comments || []).length})</span>
+                            </button>
+                        </div>
+                        {activeComments[post._id] && (
                             <CommentSection postId={post._id} comments={post.comments} />
-                        )
-                    }
+                        )}
                     </div>
-    ))
+                ))
             ) : (
-    <div className="text-center text-gray-500">No posts yet</div>
-)}
+                <div className="text-center text-gray-500">No posts yet</div>
+            )}
         </div >
     );
 };
