@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { getUser, reset } from '../features/users/userSlice';
 import Spinner from '../components/Spinner';
+import EditProfileModal from '../components/EditProfileModal';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -9,6 +10,8 @@ const Profile = () => {
     const { userProfile, isLoading, isError, message } = useSelector(
         (state) => state.user
     );
+
+    const [showEditModal, setShowEditModal] = useState(false);
 
     useEffect(() => {
         if (isError) {
@@ -55,7 +58,13 @@ const Profile = () => {
                             <p className="text-gray-600">{userProfile.headline || 'No headline'}</p>
                             <p className="text-xs text-gray-500 mt-1">Location • <span className="text-blue-600 font-bold">{userProfile.email}</span></p>
                         </div>
-                        <button className="ml-4 px-4 py-1 text-blue-600 border border-blue-600 rounded-full font-bold hover:bg-blue-50">
+                        <button
+                            onClick={() => {
+                                console.log('Edit profile clicked!');
+                                setShowEditModal(true);
+                            }}
+                            className="ml-4 px-4 py-1 text-blue-600 border border-blue-600 rounded-full font-bold hover:bg-blue-50"
+                        >
                             Edit profile
                         </button>
                     </div>
@@ -83,6 +92,8 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
+
+            <EditProfileModal show={showEditModal} onClose={() => setShowEditModal(false)} />
         </div>
     );
 };

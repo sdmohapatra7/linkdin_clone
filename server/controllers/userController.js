@@ -13,6 +13,9 @@ const getUser = async (req, res) => {
     }
 };
 
+const fs = require('fs');
+const path = require('path');
+
 // @desc    Update user profile
 // @route   PUT /api/users/profile
 // @access  Private
@@ -21,16 +24,32 @@ const updateUser = async (req, res) => {
 
     if (user) {
         user.name = req.body.name || user.name;
-        user.email = req.body.email || user.email;
         user.headline = req.body.headline || user.headline;
         user.about = req.body.about || user.about;
-        user.skills = req.body.skills || user.skills;
 
-        if (req.body.password) {
-            // Add password hashing if needed here, usually better in pre-save hook
-            // For now, assuming standard update flow
-            // To strictly follow auth controller pattern, we might want to hash it here if changed
-            // But let's skip password update in profile for simplicity in this step or import bcrypt
+        // Handle skills (check if it is a string or array)
+        if (req.body.skills) {
+            user.skills = Array.isArray(req.body.skills) ? req.body.skills : req.body.skills.split(',').map(s => s.trim());
+        }
+
+        // Handle profile picture upload
+        if (req.file) {
+            const targetDir = path.join('uploads', 'user');
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            const oldPath = req.file.path;
+            const newFilename = `user-${user._id}-${Date.now()}${path.extname(req.file.originalname)}`;
+            const newPath = path.join(targetDir, newFilename);
+
+            // Move/Rename file
+            fs.renameSync(oldPath, newPath);
+
+            // Set URL
+            // Replace backslashes for Windows paths
+            const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
+            user.profilePicture = `http://localhost:5000/${relativePath}`;
         }
 
         const updatedUser = await user.save();
@@ -40,7 +59,10 @@ const updateUser = async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             headline: updatedUser.headline,
-            token: req.body.token, // maintain token
+            profilePicture: updatedUser.profilePicture,
+            about: updatedUser.about,
+            skills: updatedUser.skills,
+            token: req.body.token,
         });
     } else {
         res.status(404);

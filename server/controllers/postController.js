@@ -70,7 +70,9 @@ const createPost = async (req, res) => {
 
     const post = await newPost.save();
 
-    res.status(200).json(post);
+    const populatedPost = await Post.findById(post._id).populate('user', 'name profilePicture headline');
+
+    res.status(200).json(populatedPost);
 };
 
 // Helper to sanitize path for URL

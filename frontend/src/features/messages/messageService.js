@@ -19,10 +19,14 @@ const allMessages = async (chatId, token) => {
 const sendMessage = async (messageData, token) => {
     const config = {
         headers: {
-            'Content-type': 'application/json',
             Authorization: `Bearer ${token}`,
         },
     };
+
+    // If it's not FormData, set JSON header (optional as axios usually detects, but good for explicit)
+    if (!(messageData instanceof FormData)) {
+        config.headers['Content-type'] = 'application/json';
+    }
 
     const response = await axios.post(API_URL, messageData, config);
 

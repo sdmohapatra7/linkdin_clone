@@ -15,8 +15,23 @@ const getUser = async (userId, token) => {
     return response.data;
 };
 
+// Update user profile
+const updateUser = async (userData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            // Content-Type header is set automatically by axios when passing FormData
+        },
+    };
+
+    const response = await axios.put(API_URL + 'profile', userData, config);
+
+    return response.data;
+};
+
 const userService = {
     getUser,
+    updateUser,
 };
 
 export default userService;
