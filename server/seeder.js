@@ -8,6 +8,7 @@ const Chat = require('./models/Chat');
 const Message = require('./models/Message');
 const Job = require('./models/Job');
 const Notification = require('./models/Notification');
+const Role = require('./models/Role');
 const connectDB = require('./config/db');
 
 dotenv.config();
@@ -21,11 +22,25 @@ const importData = async () => {
         await ConnectionRequest.deleteMany();
         await Chat.deleteMany();
         await Message.deleteMany();
+        await Role.deleteMany();
 
         console.log('Data Destroyed...');
 
         const salt = await bcrypt.genSalt(10);
         const password = await bcrypt.hash('password123', salt);
+
+        // Create Roles
+        const roles = await Role.insertMany([
+            { name: 'Software Engineer' },
+            { name: 'Product Manager' },
+            { name: 'UX Designer' },
+            { name: 'Recruiter' },
+            { name: 'Student' },
+        ]);
+
+        const engineerRole = roles[0]._id;
+        const pmRole = roles[1]._id;
+        const designerRole = roles[2]._id;
 
         const createdUsers = await User.insertMany([
             {
@@ -36,6 +51,8 @@ const importData = async () => {
                 about: 'Passionate about building scalable web applications.',
                 skills: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
                 profilePicture: '',
+                role: engineerRole,
+                isAdmin: true, // Make John Admin
             },
             {
                 name: 'Jane Smith',
@@ -45,6 +62,7 @@ const importData = async () => {
                 about: 'Driving product vision and strategy.',
                 skills: ['Product Management', 'Agile', 'Scrum', 'UX'],
                 profilePicture: '',
+                role: pmRole,
             },
             {
                 name: 'Bob Jones',
@@ -54,6 +72,7 @@ const importData = async () => {
                 about: 'Designing intuitive and user-friendly interfaces.',
                 skills: ['Figma', 'Sketch', 'Adobe XD', 'Prototyping'],
                 profilePicture: '',
+                role: designerRole,
             },
         ]);
 
@@ -156,6 +175,7 @@ const destroyData = async () => {
         await Message.deleteMany();
         await Job.deleteMany();
         await Notification.deleteMany();
+        await Role.deleteMany();
 
         console.log('Data Destroyed!');
         process.exit();

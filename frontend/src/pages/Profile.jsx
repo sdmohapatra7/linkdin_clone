@@ -62,6 +62,9 @@ const Profile = () => {
                             <h1 className="text-2xl font-bold">{userProfile.name}</h1>
                             <p className="text-gray-600">{userProfile.headline || 'No headline'}</p>
                             <p className="text-xs text-gray-500 mt-1">Location • <span className="text-blue-600 font-bold">{userProfile.email}</span></p>
+                            <p className="text-sm text-blue-600 font-bold mt-2 cursor-pointer hover:underline">
+                                {userProfile.connections ? userProfile.connections.length : 0} connections
+                            </p>
                         </div>
                         <button
                             onClick={() => {

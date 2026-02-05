@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getConnections, getRequests, acceptRequest } from '../features/connections/connectionSlice';
+import { useNavigate } from 'react-router-dom';
+import { getConnections, getRequests, acceptRequest, withdrawRequest } from '../features/connections/connectionSlice';
+import { accessChat } from '../features/chat/chatSlice';
 import Spinner from '../components/Spinner';
 import ConnectionCard from '../components/ConnectionCard';
 
 const MyNetwork = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { requests, isLoading } = useSelector((state) => state.connection);
+    const { requests, connections, isLoading } = useSelector((state) => state.connection);
 
     // Mock suggestions for now as we don't have a "get all users" in connection slice yet (can add later)
     const suggestions = [
@@ -16,6 +19,7 @@ const MyNetwork = () => {
 
     useEffect(() => {
         dispatch(getRequests());
+        dispatch(getConnections());
     }, [dispatch]);
 
     const handleAccept = (id) => {
@@ -23,8 +27,12 @@ const MyNetwork = () => {
     };
 
     const handleIgnore = (id) => {
-        // Implement ignore logic if needed (e.g. remove from local state or API call)
-        console.log('Ignored', id);
+        dispatch(withdrawRequest(id));
+    };
+
+    const handleMessage = async (id) => {
+        await dispatch(accessChat(id));
+        navigate('/messaging');
     };
 
     if (isLoading) {
@@ -59,6 +67,26 @@ const MyNetwork = () => {
                                     <button onClick={() => handleAccept(req._id)} className="text-blue-600 font-medium px-4 py-1.5 rounded-full border border-blue-600 hover:bg-blue-50">Accept</button>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* My Connections */}
+            {connections && connections.length > 0 && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                        <h2 className="font-semibold text-gray-900">My Connections</h2>
+                        <span className="text-gray-500 text-sm">{connections.length} Connections</span>
+                    </div>
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {connections.map((user) => (
+                            <ConnectionCard
+                                key={user._id}
+                                user={user}
+                                isConnection={true}
+                                onMessage={() => handleMessage(user._id)}
+                            />
                         ))}
                     </div>
                 </div>

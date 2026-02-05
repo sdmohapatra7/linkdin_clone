@@ -9,6 +9,8 @@ import notificationReducer from '../features/notifications/notificationSlice';
 import jobReducer from '../features/jobs/jobSlice';
 import searchReducer from '../features/search/searchSlice';
 
+import roleReducer from '../features/roles/roleSlice';
+
 export const store = configureStore({
     reducer: {
         auth: authReducer,
@@ -20,5 +22,6 @@ export const store = configureStore({
         notification: notificationReducer,
         job: jobReducer,
         search: searchReducer,
+        role: roleReducer,
     },
 });

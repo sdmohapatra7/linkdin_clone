@@ -1,4 +1,6 @@
 import Navbar from './Navbar';
+import ProfileSummary from './ProfileSummary';
+import AddToFeed from './AddToFeed';
 
 const Layout = ({ children }) => {
     return (
@@ -8,11 +10,7 @@ const Layout = ({ children }) => {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                     {/* Left Sidebar - Profile Summary */}
                     <div className="hidden md:block md:col-span-3">
-                        {/* Placeholder for Left Sidebar */}
-                        <div className="bg-white rounded-lg shadow p-4">
-                            <h3 className="font-bold">Profile Summary</h3>
-                            <p className="text-sm text-gray-500">Welcome back!</p>
-                        </div>
+                        <ProfileSummary />
                     </div>
 
                     {/* Middle - Feed */}
@@ -22,11 +20,7 @@ const Layout = ({ children }) => {
 
                     {/* Right Sidebar - Recommendations */}
                     <div className="hidden md:block md:col-span-3">
-                        {/* Placeholder for Right Sidebar */}
-                        <div className="bg-white rounded-lg shadow p-4">
-                            <h3 className="font-bold">Add to your feed</h3>
-                            <p className="text-sm text-gray-500">Follow these topics</p>
-                        </div>
+                        <AddToFeed />
                     </div>
                 </div>
             </div>

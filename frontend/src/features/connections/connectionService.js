@@ -27,6 +27,30 @@ const acceptRequest = async (requestId, token) => {
     return response.data;
 }
 
+// Withdraw connection request
+const withdrawRequest = async (requestId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.delete(API_URL + 'withdraw/' + requestId, config);
+    return response.data;
+}
+
+// Get connections
+const getConnections = async (token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.get(API_URL, config);
+    return response.data;
+}
+
 // Get suggestions (using getUsers from user API, but logically handled here for UI)
 // Actually suggestions usually come from Users API (getAllUsers)
 // So we might use userService for that, or here.
@@ -34,7 +58,9 @@ const acceptRequest = async (requestId, token) => {
 
 const connectionService = {
     getRequests,
-    acceptRequest
+    acceptRequest,
+    withdrawRequest,
+    getConnections,
 };
 
 export default connectionService;

@@ -29,9 +29,23 @@ const updateUser = async (userData, token) => {
     return response.data;
 };
 
+// Search/Get all users
+const getUsers = async (keyword = '', token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.get(API_URL + `?search=${keyword}`, config);
+
+    return response.data;
+};
+
 const userService = {
     getUser,
     updateUser,
+    getUsers,
 };
 
 export default userService;

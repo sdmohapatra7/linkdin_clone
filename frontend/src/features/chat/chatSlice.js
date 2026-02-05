@@ -46,6 +46,55 @@ export const fetchChats = createAsyncThunk(
     }
 );
 
+export const createGroupChat = createAsyncThunk(
+    'chat/createGroup',
+    async (groupData, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await chatService.createGroupChat(groupData, token);
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
+export const renameGroup = createAsyncThunk(
+    'chat/renameGroup',
+    async (groupData, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await chatService.renameGroup(groupData, token);
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.toString());
+        }
+    }
+);
+
+export const addToGroup = createAsyncThunk(
+    'chat/addToGroup',
+    async (groupData, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await chatService.addToGroup(groupData, token);
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.toString());
+        }
+    }
+);
+
+export const removeFromGroup = createAsyncThunk(
+    'chat/removeFromGroup',
+    async (groupData, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await chatService.removeFromGroup(groupData, token);
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.toString());
+        }
+    }
+);
+
 export const chatSlice = createSlice({
     name: 'chat',
     initialState,
@@ -86,6 +135,23 @@ export const chatSlice = createSlice({
                 state.isLoading = false;
                 state.isError = true;
                 state.message = action.payload;
+            })
+            .addCase(createGroupChat.fulfilled, (state, action) => {
+                state.chats.unshift(action.payload);
+                state.selectedChat = action.payload; // Optional: select created chat
+            })
+            .addCase(renameGroup.fulfilled, (state, action) => {
+                state.selectedChat = action.payload;
+                // Update in list
+                state.chats = state.chats.map(c => c._id === action.payload._id ? action.payload : c);
+            })
+            .addCase(addToGroup.fulfilled, (state, action) => {
+                state.selectedChat = action.payload;
+                state.chats = state.chats.map(c => c._id === action.payload._id ? action.payload : c);
+            })
+            .addCase(removeFromGroup.fulfilled, (state, action) => {
+                state.selectedChat = action.payload;
+                state.chats = state.chats.map(c => c._id === action.payload._id ? action.payload : c);
             });
     },
 });

@@ -33,6 +33,7 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/search', require('./routes/searchRoutes'));
+app.use('/api/roles', require('./routes/roleRoutes'));
 
 app.use(require('./middleware/errorMiddleware').errorHandler);
 

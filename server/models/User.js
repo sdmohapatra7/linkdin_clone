@@ -38,6 +38,15 @@ const userSchema = mongoose.Schema(
                 ref: 'User',
             },
         ],
+        role: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Role',
+        },
+        isAdmin: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     {
         timestamps: true,

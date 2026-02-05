@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { register, reset } from '../features/auth/authSlice';
+import { getRoles } from '../features/roles/roleSlice';
 import Spinner from '../components/Spinner';
 
 const Signup = () => {
@@ -10,9 +12,10 @@ const Signup = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        role: '', // Added role
     });
 
-    const { name, email, password, confirmPassword } = formData;
+    const { name, email, password, confirmPassword, role } = formData;
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -20,10 +23,15 @@ const Signup = () => {
     const { user, isLoading, isError, isSuccess, message } = useSelector(
         (state) => state.auth
     );
+    const { roles } = useSelector((state) => state.role); // Fetch roles
+
+    useEffect(() => {
+        dispatch(getRoles()); // Load roles on mount
+    }, [dispatch]);
 
     useEffect(() => {
         if (isError) {
-            alert(message);
+            toast.error(message);
         }
 
         if (isSuccess || user) {
@@ -42,10 +50,17 @@ const Signup = () => {
 
     const onSubmit = (e) => {
         e.preventDefault();
+
         if (password !== confirmPassword) {
-            alert("Passwords do not match");
+            toast.error('Passwords do not match');
         } else {
-            const userData = { name, email, password };
+            const userData = {
+                name,
+                email,
+                password,
+                role: role || undefined, // Send role if selected
+            };
+
             dispatch(register(userData));
         }
     };
@@ -55,34 +70,42 @@ const Signup = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Join LinkedIn today</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-supported-dps="24x24" fill="currentColor" className="text-blue-600 w-12 h-12 mx-auto" width="24" height="24" focusable="false">
+                    <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"></path>
+                </svg>
+                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Make the most of your professional life</h2>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-200">
+                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
                     <form className="space-y-6" onSubmit={onSubmit}>
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                                Full Name
+                            <label
+                                htmlFor="name"
+                                className="block text-sm font-medium text-gray-700"
+                            >
+                                Name
                             </label>
                             <div className="mt-1">
                                 <input
                                     id="name"
                                     name="name"
                                     type="text"
-                                    autoComplete="name"
                                     required
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     value={name}
                                     onChange={onChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            <label
+                                htmlFor="email"
+                                className="block text-sm font-medium text-gray-700"
+                            >
                                 Email address
                             </label>
                             <div className="mt-1">
@@ -92,10 +115,33 @@ const Signup = () => {
                                     type="email"
                                     autoComplete="email"
                                     required
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     value={email}
                                     onChange={onChange}
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor="role"
+                                className="block text-sm font-medium text-gray-700"
+                            >
+                                User Role (Optional)
+                            </label>
+                            <div className="mt-1">
+                                <select
+                                    id="role"
+                                    name="role"
+                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    value={role}
+                                    onChange={onChange}
+                                >
+                                    <option value="">Select a role...</option>
+                                    {roles.map((r) => (
+                                        <option key={r._id} value={r._id}>{r.name}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 

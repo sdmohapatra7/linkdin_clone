@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchChats, accessChat, setSelectedChat } from '../features/chat/chatSlice';
+import { fetchChats, accessChat, setSelectedChat, createGroupChat } from '../features/chat/chatSlice';
 import { allMessages, sendMessage, addMessage } from '../features/messages/messageSlice';
+import { getConnections } from '../features/connections/connectionSlice';
 import io from 'socket.io-client';
 import EmojiPicker from 'emoji-picker-react';
-import { FaSmile, FaPaperclip, FaTimes } from 'react-icons/fa';
+import { FaSmile, FaPaperclip, FaTimes, FaEdit, FaInfoCircle } from 'react-icons/fa';
 
 const ENDPOINT = 'http://localhost:5000';
 var socket, selectedChatCompare;
@@ -15,6 +16,14 @@ const Messaging = () => {
     const { user } = useSelector((state) => state.auth);
     const { chats, selectedChat, isLoading: loadingChats } = useSelector((state) => state.chat);
     const { messages, isLoading: loadingMessages } = useSelector((state) => state.message);
+    const { connections } = useSelector((state) => state.connection);
+
+    // New Chat / Group Modal State
+    const [showNewChatModal, setShowNewChatModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isGroupMode, setIsGroupMode] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [groupUsers, setGroupUsers] = useState([]);
 
     // Auto-scroll to bottom of chat
     const endOfMessagesRef = useRef(null);
@@ -39,7 +48,10 @@ const Messaging = () => {
     }, [user]);
 
     useEffect(() => {
-        if (user) dispatch(fetchChats());
+        if (user) {
+            dispatch(fetchChats());
+            dispatch(getConnections());
+        }
     }, [dispatch, user]);
 
     // Fetch messages when chat is selected & Join Room
@@ -134,6 +146,34 @@ const Messaging = () => {
         }
     };
 
+    const handleGroup = (userToAdd) => {
+        if (groupUsers.includes(userToAdd)) {
+            setGroupUsers(groupUsers.filter((u) => u._id !== userToAdd._id));
+        } else {
+            setGroupUsers([...groupUsers, userToAdd]);
+        }
+    };
+
+    const handleAccessChat = (userId) => {
+        dispatch(accessChat(userId));
+        setShowNewChatModal(false);
+        setSearchQuery("");
+    };
+
+    const handleCreateGroup = () => {
+        if (!groupName || !groupUsers) return;
+
+        dispatch(createGroupChat({
+            name: groupName,
+            users: JSON.stringify(groupUsers.map((u) => u._id)),
+        }));
+
+        setShowNewChatModal(false);
+        setGroupName("");
+        setGroupUsers([]);
+        setIsGroupMode(false);
+    };
+
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
     };
@@ -142,9 +182,64 @@ const Messaging = () => {
         <div className="h-[calc(100vh-80px)] bg-white rounded-lg shadow overflow-hidden flex">
             {/* Sidebar - Chat List */}
             <div className={`w-full md:w-1/3 border-r border-gray-200 flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4 border-b border-gray-200 flex justify-between items-center">
                     <h2 className="text-xl font-bold">Messaging</h2>
+                    <button
+                        onClick={() => setShowNewChatModal(true)}
+                        className="text-gray-600 hover:text-blue-600 p-2 rounded-full hover:bg-gray-100 transition"
+                        title="New Chat"
+                    >
+                        <FaEdit size={20} />
+                    </button>
                 </div>
+
+                {/* New Chat Modal (Simple Inline) */}
+                {showNewChatModal && (
+                    <div className="p-4 bg-gray-50 border-b border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-semibold text-gray-700">New Message</h3>
+                            <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-red-500">
+                                <FaTimes />
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search connections..."
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 mb-2 focus:outline-none focus:border-blue-500 text-sm"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                            {connections && connections
+                                .filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                .map(conn => (
+                                    <div
+                                        key={conn._id}
+                                        onClick={() => {
+                                            dispatch(accessChat(conn._id));
+                                            setShowNewChatModal(false);
+                                            setSearchQuery("");
+                                        }}
+                                        className="flex items-center space-x-2 p-2 hover:bg-white rounded cursor-pointer transition"
+                                    >
+                                        <img
+                                            src={conn.profilePicture || 'https://via.placeholder.com/30'}
+                                            alt={conn.name}
+                                            className="w-8 h-8 rounded-full object-cover"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">{conn.name}</p>
+                                            <p className="text-xs text-gray-500 truncate">{conn.headline}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                            {connections && connections.length === 0 && (
+                                <p className="text-xs text-center text-gray-500 p-2">No connections found.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
                 <div className="overflow-y-auto flex-1">
                     {loadingChats ? (
                         <p className="p-4 text-center">Loading chats...</p>
@@ -208,13 +303,24 @@ const Messaging = () => {
                                             : 'https://via.placeholder.com/50?text=Group'}
                                         alt=""
                                     />
-                                    <h3 className="font-bold">
-                                        {!selectedChat.isGroupChat
-                                            ? (selectedChat.users[0]._id === user?._id ? selectedChat.users[1]?.name : selectedChat.users[0]?.name)
-                                            : selectedChat.chatName}
-                                    </h3>
+                                    <div>
+                                        <h3 className="font-bold">
+                                            {!selectedChat.isGroupChat
+                                                ? (selectedChat.users[0]._id === user?._id ? selectedChat.users[1]?.name : selectedChat.users[0]?.name)
+                                                : selectedChat.chatName}
+                                        </h3>
+                                        {selectedChat.isGroupChat && (
+                                            <p className="text-xs text-gray-500">{selectedChat.users.length} members</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
+                            {/* Group Info Button */}
+                            {selectedChat.isGroupChat && (
+                                <button title="Group Info" className="text-gray-500 hover:text-blue-600">
+                                    <FaInfoCircle size={20} />
+                                </button>
+                            )}
                         </div>
 
                         {/* Chat Messages Area */}

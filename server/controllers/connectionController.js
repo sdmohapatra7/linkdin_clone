@@ -83,6 +83,31 @@ const acceptConnectionRequest = async (req, res) => {
     res.status(200).json({ message: 'Request accepted' });
 };
 
+// @desc    Withdraw/Reject connection request
+// @route   PUT /api/connections/withdraw/:id
+// @access  Private
+const withdrawConnectionRequest = async (req, res) => {
+    const request = await ConnectionRequest.findById(req.params.id);
+
+    if (!request) {
+        res.status(404);
+        throw new Error('Request not found');
+    }
+
+    // Allow both sender (withdraw) and receiver (reject/ignore) to delete the request
+    if (
+        request.sender.toString() !== req.user.id &&
+        request.receiver.toString() !== req.user.id
+    ) {
+        res.status(401);
+        throw new Error('Not authorized');
+    }
+
+    await request.deleteOne();
+
+    res.status(200).json({ id: req.params.id });
+};
+
 // @desc    Get connection requests
 // @route   GET /api/connections/requests
 // @access  Private
@@ -106,6 +131,7 @@ const getConnections = async (req, res) => {
 module.exports = {
     sendConnectionRequest,
     acceptConnectionRequest,
+    withdrawConnectionRequest,
     getConnectionRequests,
     getConnections
 };

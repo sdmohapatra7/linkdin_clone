@@ -6,10 +6,14 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import Messaging from './pages/Messaging';
 import Notifications from './pages/Notifications';
+import MyNetwork from './pages/MyNetwork';
 import Jobs from './pages/Jobs';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
+import AdminDashboard from './pages/AdminDashboard';
 import { SocketProvider } from './context/SocketContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -43,6 +47,12 @@ function App() {
             </Layout>
           } />
 
+          <Route path="/mynetwork" element={
+            <Layout>
+              <MyNetwork />
+            </Layout>
+          } />
+
           <Route path="/jobs" element={
             <Layout>
               <Jobs />
@@ -61,6 +71,12 @@ function App() {
             </Layout>
           } />
 
+          <Route path="/admin" element={
+            <Layout>
+              <AdminDashboard />
+            </Layout>
+          } />
+
           {/* Fallback for other routes */}
           <Route path="*" element={
             <Layout>
@@ -70,6 +86,7 @@ function App() {
 
         </Routes>
       </Router>
+      <ToastContainer />
     </SocketProvider>
   );
 }

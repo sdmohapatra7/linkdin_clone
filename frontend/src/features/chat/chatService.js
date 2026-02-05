@@ -29,9 +29,57 @@ const fetchChats = async (token) => {
     return response.data;
 };
 
+const createGroupChat = async (groupData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.post(API_URL + 'group', groupData, config);
+    return response.data;
+};
+
+const renameGroup = async (groupData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.put(API_URL + 'rename', groupData, config);
+    return response.data;
+};
+
+const addToGroup = async (groupData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.put(API_URL + 'groupadd', groupData, config);
+    return response.data;
+};
+
+const removeFromGroup = async (groupData, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.put(API_URL + 'groupremove', groupData, config);
+    return response.data;
+};
+
 const chatService = {
     accessChat,
     fetchChats,
+    createGroupChat,
+    renameGroup,
+    addToGroup,
+    removeFromGroup,
 };
 
 export default chatService;

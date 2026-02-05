@@ -223,6 +223,17 @@ const Navbar = () => {
                                             >
                                                 Settings
                                             </Link>
+                                            {(user?.isAdmin || user?.role?.name === 'Recruiter') && (
+                                                <Link
+                                                    to="/admin"
+                                                    className="block px-4 py-2 text-sm text-blue-600 font-semibold hover:bg-gray-100"
+                                                    role="menuitem"
+                                                    tabIndex="-1"
+                                                    onClick={() => setShowDropdown(false)}
+                                                >
+                                                    Admin Dashboard
+                                                </Link>
+                                            )}
                                             <button
                                                 onClick={() => {
                                                     setShowDropdown(false);
