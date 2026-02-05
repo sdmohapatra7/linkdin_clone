@@ -6,6 +6,7 @@ import { logout } from '../features/auth/authSlice';
 import PostCreator from '../components/PostCreator';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
+import { useSocket } from '../context/SocketContext';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -49,7 +50,21 @@ const Home = () => {
         return () => {
             dispatch(reset());
         };
-    }, [user, navigate, isError, message, dispatch]);
+    }, [user, navigate, dispatch, isError, message]);
+
+    const { socket } = useSocket();
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('new post', (newPost) => {
+                dispatch(getPosts());
+            });
+            return () => {
+                socket.off('new post');
+            };
+        }
+    }, [socket, dispatch]);
+
 
     if (isLoading) {
         return <Spinner />;

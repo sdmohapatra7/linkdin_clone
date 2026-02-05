@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from './authService';
+import { updateUserProfile } from '../users/userSlice';
 
 // Get user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
@@ -90,6 +91,12 @@ export const authSlice = createSlice({
             })
             .addCase(logout.fulfilled, (state) => {
                 state.user = null;
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                if (state.user) {
+                    state.user = { ...state.user, ...action.payload, token: state.user.token };
+                    localStorage.setItem('user', JSON.stringify(state.user));
+                }
             });
     },
 });

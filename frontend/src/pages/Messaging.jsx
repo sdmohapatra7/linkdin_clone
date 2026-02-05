@@ -65,6 +65,9 @@ const Messaging = () => {
                 dispatch(addMessage(newMessageReceived));
             }
         });
+        return () => {
+            socket.off("message received");
+        };
     }, [dispatch]);
 
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);

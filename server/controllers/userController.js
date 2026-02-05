@@ -32,8 +32,41 @@ const updateUser = async (req, res) => {
             user.skills = Array.isArray(req.body.skills) ? req.body.skills : req.body.skills.split(',').map(s => s.trim());
         }
 
-        // Handle profile picture upload
-        if (req.file) {
+        // Handle file uploads
+        if (req.files) {
+            const targetDir = path.join('uploads', 'user');
+            if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+            }
+
+            // Handle Profile Picture
+            if (req.files.profilePicture) {
+                const file = req.files.profilePicture[0];
+                const oldPath = file.path;
+                const newFilename = `user-pfp-${user._id}-${Date.now()}${path.extname(file.originalname)}`;
+                const newPath = path.join(targetDir, newFilename);
+
+                fs.renameSync(oldPath, newPath);
+
+                const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
+                user.profilePicture = `http://localhost:5000/${relativePath}`;
+            }
+
+            // Handle Banner Photo
+            if (req.files.bannerPhoto) {
+                const file = req.files.bannerPhoto[0];
+                const oldPath = file.path;
+                const newFilename = `user-banner-${user._id}-${Date.now()}${path.extname(file.originalname)}`;
+                const newPath = path.join(targetDir, newFilename);
+
+                fs.renameSync(oldPath, newPath);
+
+                const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
+                user.bannerPhoto = `http://localhost:5000/${relativePath}`;
+            }
+        } else if (req.file) {
+            // Fallback for single file upload legacy support specifically for profilePicture if mistakenly used
+            // This block might not be reached if using upload.fields strictly, but good for safety if middleware changes back temporarily
             const targetDir = path.join('uploads', 'user');
             if (!fs.existsSync(targetDir)) {
                 fs.mkdirSync(targetDir, { recursive: true });
@@ -43,11 +76,8 @@ const updateUser = async (req, res) => {
             const newFilename = `user-${user._id}-${Date.now()}${path.extname(req.file.originalname)}`;
             const newPath = path.join(targetDir, newFilename);
 
-            // Move/Rename file
             fs.renameSync(oldPath, newPath);
 
-            // Set URL
-            // Replace backslashes for Windows paths
             const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
             user.profilePicture = `http://localhost:5000/${relativePath}`;
         }
@@ -60,6 +90,7 @@ const updateUser = async (req, res) => {
             email: updatedUser.email,
             headline: updatedUser.headline,
             profilePicture: updatedUser.profilePicture,
+            bannerPhoto: updatedUser.bannerPhoto,
             about: updatedUser.about,
             skills: updatedUser.skills,
             token: req.body.token,

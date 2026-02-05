@@ -72,6 +72,11 @@ const createPost = async (req, res) => {
 
     const populatedPost = await Post.findById(post._id).populate('user', 'name profilePicture headline');
 
+    const io = req.app.get('io');
+    if (io) {
+        io.emit('new post', populatedPost);
+    }
+
     res.status(200).json(populatedPost);
 };
 
@@ -147,6 +152,9 @@ const likePost = async (req, res) => {
                     post: post._id,
                 });
 
+                await notification.populate('sender', 'name profilePicture');
+                await notification.populate('post', 'text');
+
                 // Real-time update
                 const io = req.app.get('io');
                 if (io) {
@@ -184,6 +192,24 @@ const addComment = async (req, res) => {
         const populatedPost = await Post.findById(req.params.id)
             .populate('comments.user', 'name profilePicture headline')
             .populate('user', 'name profilePicture headline');
+
+        // Notification for comment
+        if (post.user.toString() !== req.user.id) {
+            const notification = await Notification.create({
+                recipient: post.user,
+                sender: req.user.id,
+                type: 'comment',
+                post: post._id,
+            });
+
+            await notification.populate('sender', 'name profilePicture');
+            await notification.populate('post', 'text');
+
+            const io = req.app.get('io');
+            if (io) {
+                io.in(post.user.toString()).emit('notification received', notification);
+            }
+        }
 
         res.json(populatedPost.comments);
     } catch (err) {

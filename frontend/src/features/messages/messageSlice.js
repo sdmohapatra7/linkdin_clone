@@ -50,7 +50,9 @@ export const messageSlice = createSlice({
     initialState,
     reducers: {
         addMessage: (state, action) => {
-            state.messages = [...state.messages, action.payload];
+            if (!state.messages.some(m => m._id === action.payload._id)) {
+                state.messages = [...state.messages, action.payload];
+            }
         },
         resetMessages: (state) => initialState,
     },

@@ -29,4 +29,31 @@ const markAsRead = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { getNotifications, markAsRead };
+// @desc    Delete notification
+// @route   DELETE /api/notifications/:id
+// @access  Protected
+const deleteNotification = asyncHandler(async (req, res) => {
+    const notification = await Notification.findById(req.params.id);
+
+    if (notification) {
+        if (notification.recipient.toString() !== req.user.id) {
+            res.status(401);
+            throw new Error('Not authorized');
+        }
+        await notification.deleteOne();
+        res.json({ id: req.params.id });
+    } else {
+        res.status(404);
+        throw new Error('Notification not found');
+    }
+});
+
+// @desc    Delete all notifications
+// @route   DELETE /api/notifications
+// @access  Protected
+const deleteAllNotifications = asyncHandler(async (req, res) => {
+    await Notification.deleteMany({ recipient: req.user.id });
+    res.json({ message: 'All notifications cleared' });
+});
+
+module.exports = { getNotifications, markAsRead, deleteNotification, deleteAllNotifications };

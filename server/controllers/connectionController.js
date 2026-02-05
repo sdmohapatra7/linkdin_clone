@@ -40,6 +40,8 @@ const sendConnectionRequest = async (req, res) => {
         type: 'connection',
     });
 
+    await notification.populate('sender', 'name profilePicture');
+
     // Real-time update
     const io = req.app.get('io');
     if (io) {

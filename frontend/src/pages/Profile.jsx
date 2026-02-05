@@ -42,10 +42,15 @@ const Profile = () => {
             <div className="bg-white rounded-lg shadow overflow-hidden">
                 {/* Cover Image */}
                 <div className="h-32 bg-gray-300 relative">
+                    <img
+                        className="w-full h-full object-cover"
+                        src={userProfile.bannerPhoto || 'https://via.placeholder.com/1200x300'} // Fallback if no banner
+                        alt="Cover"
+                    />
                     {/* Profile Image */}
                     <div className="absolute -bottom-10 left-4">
                         <img
-                            className="h-24 w-24 rounded-full border-4 border-white object-cover"
+                            className="h-24 w-24 rounded-full border-4 border-white object-cover bg-white"
                             src={userProfile.profilePicture || 'https://via.placeholder.com/100'}
                             alt=""
                         />

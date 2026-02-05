@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
+const Notification = require('../models/Notification');
 
 // @desc    Get all Messages
 // @route   GET /api/message/:chatId
@@ -88,6 +89,25 @@ const sendMessage = asyncHandler(async (req, res) => {
         });
 
         await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
+
+        // Create Notification for recipients
+        message.chat.users.forEach(async (user) => {
+            if (user._id.toString() === req.user._id.toString()) return;
+
+            const notification = await Notification.create({
+                recipient: user._id,
+                sender: req.user._id,
+                type: 'message',
+                post: null, // No post associated
+            });
+
+            await notification.populate('sender', 'name profilePicture');
+
+            const io = req.app.get('io');
+            if (io) {
+                io.in(user._id.toString()).emit('notification received', notification);
+            }
+        });
 
         res.json(message);
     } catch (error) {

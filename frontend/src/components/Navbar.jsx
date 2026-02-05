@@ -1,16 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, reset } from '../features/auth/authSlice';
+import { useSocket } from '../context/SocketContext';
+import { BsBellFill } from 'react-icons/bs';
+import { getNotifications, markAsRead, addNotification } from '../features/notifications/notificationSlice';
 
 const Navbar = () => {
-    // const { user } = useSelector((state) => state.auth);
-    // const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
+    const { socket } = useSocket();
+    const { notifications } = useSelector((state) => state.notification);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+
+    // Calculate unread count from Redux store which is the source of truth
+    const unreadCount = notifications ? notifications.filter(n => !n.read).length : 0;
+
+    useEffect(() => {
+        if (socket) {
+            const handleNewNotification = (notification) => {
+                dispatch(addNotification(notification));
+            };
+
+            socket.on('notification received', handleNewNotification);
+
+            return () => {
+                socket.off('notification received', handleNewNotification);
+            };
+        }
+    }, [socket, dispatch]);
 
     const onLogout = () => {
-        // dispatch(logout());
-        // dispatch(reset());
+        dispatch(logout());
+        dispatch(reset());
         navigate('/login');
+    };
+
+    const handleNotificationClick = (notification) => {
+        // Mark as read
+        if (!notification.read) {
+            dispatch(markAsRead(notification._id));
+        }
+
+        // Navigate
+        setShowNotificationDropdown(false);
+        if (notification.type === 'message') {
+            navigate('/messaging');
+        } else if (notification.type === 'connection') {
+            navigate('/mynetwork');
+        } else {
+            // like or comment
+            navigate('/');
+        }
     };
 
     const handleSearch = (e) => {
@@ -60,27 +104,146 @@ const Navbar = () => {
                             <Link to="/jobs" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                 Jobs
                             </Link>
-                            <Link to="/messaging" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            <Link to="/messaging" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium relative">
                                 Messaging
                             </Link>
-                            <Link to="/notifications" className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                                Notifications
-                            </Link>
+
                         </div>
                     </div>
                     <div className="flex items-center">
+                        <div className="relative">
+                            <button
+                                onClick={() => {
+                                    setShowNotificationDropdown(!showNotificationDropdown);
+                                    if (!showNotificationDropdown) {
+                                        dispatch(getNotifications());
+                                    }
+                                }}
+                                className="relative p-2 text-gray-500 hover:text-gray-700 mr-2 focus:outline-none"
+                            >
+                                <BsBellFill className="h-6 w-6" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {showNotificationDropdown && (
+                                <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                                    <div className="py-2 px-4 border-b border-gray-100 flex justify-between items-center">
+                                        <h3 className="font-bold text-gray-700">Notifications</h3>
+                                        <Link
+                                            to="/notifications"
+                                            className="text-xs text-blue-600 hover:underline"
+                                            onClick={() => setShowNotificationDropdown(false)}
+                                        >
+                                            View All
+                                        </Link>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {notifications && notifications.length > 0 ? (
+                                            notifications.slice(0, 5).map((notification) => (
+                                                <div
+                                                    key={notification._id}
+                                                    onClick={() => handleNotificationClick(notification)}
+                                                    className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition ${!notification.read ? 'bg-blue-50' : ''}`}
+                                                >
+                                                    <div className="flex items-start space-x-3">
+                                                        <img
+                                                            className="h-8 w-8 rounded-full object-cover"
+                                                            src={notification.sender.profilePicture || 'https://via.placeholder.com/40'}
+                                                            alt=""
+                                                        />
+                                                        <div className="flex-1">
+                                                            <p className="text-xs text-gray-800">
+                                                                <span className="font-bold">{notification.sender.name}</span>
+                                                                {' '}
+                                                                {notification.type === 'like' && 'liked your post'}
+                                                                {notification.type === 'comment' && 'commented on your post'}
+                                                                {notification.type === 'connection' && 'sent connection request'}
+                                                                {notification.type === 'message' && 'sent you a message'}
+                                                            </p>
+                                                            <span className="text-xs text-gray-400 mt-1 block">{new Date(notification.createdAt).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-500 text-sm text-center py-4">No notifications</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="ml-3 relative">
                             <div>
-                                <Link to="/profile" className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                                    <span className="sr-only">Open user menu</span>
-                                    <img className="h-8 w-8 rounded-full" src="https://via.placeholder.com/40" alt="" />
-                                </Link>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowDropdown(!showDropdown)}
+                                        className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        id="user-menu-button"
+                                        aria-expanded="false"
+                                        aria-haspopup="true"
+                                    >
+                                        <span className="sr-only">Open user menu</span>
+                                        <img
+                                            className="h-8 w-8 rounded-full object-cover"
+                                            src={user?.profilePicture || 'https://via.placeholder.com/40'}
+                                            alt=""
+                                            onError={(e) => { e.target.src = 'https://via.placeholder.com/40' }}
+                                        />
+                                    </button>
+
+                                    {showDropdown && (
+                                        <div
+                                            className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                            role="menu"
+                                            aria-orientation="vertical"
+                                            aria-labelledby="user-menu-button"
+                                            tabIndex="-1"
+                                        >
+                                            <Link
+                                                to="/profile"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                role="menuitem"
+                                                tabIndex="-1"
+                                                id="user-menu-item-0"
+                                                onClick={() => setShowDropdown(false)}
+                                            >
+                                                View Profile
+                                            </Link>
+                                            <Link
+                                                to="/settings"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                role="menuitem"
+                                                tabIndex="-1"
+                                                id="user-menu-item-1"
+                                                onClick={() => setShowDropdown(false)}
+                                            >
+                                                Settings
+                                            </Link>
+                                            <button
+                                                onClick={() => {
+                                                    setShowDropdown(false);
+                                                    onLogout();
+                                                }}
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                role="menuitem"
+                                                tabIndex="-1"
+                                                id="user-menu-item-2"
+                                            >
+                                                Sign out
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </nav>
+        </nav >
     );
 };
 

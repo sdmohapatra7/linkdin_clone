@@ -11,6 +11,7 @@ const PostCreator = () => {
     const [showModal, setShowModal] = useState(false);
 
     const { isLoading, uploadProgress } = useSelector((state) => state.post);
+    const { user } = useSelector((state) => state.auth);
 
     const dispatch = useDispatch();
 
@@ -46,22 +47,17 @@ const PostCreator = () => {
         <>
             <div className="bg-white rounded-lg shadow p-4 mb-4">
                 <div className="flex space-x-3">
-                    <img className="h-10 w-10 rounded-full" src="https://via.placeholder.com/40" alt="" />
+                    <img
+                        className="h-10 w-10 rounded-full object-cover"
+                        src={user?.profilePicture || "https://via.placeholder.com/40"}
+                        alt=""
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/40' }}
+                    />
                     <button
                         onClick={handleOpenModal}
                         className="flex-grow text-left rounded-full border border-gray-300 px-4 py-2 text-gray-500 hover:bg-gray-100 font-medium transition"
                     >
                         Start a post
-                    </button>
-                </div>
-                <div className="flex justify-between mt-3 px-2">
-                    <button onClick={() => setShowModal(true)} className="flex items-center space-x-2 text-gray-500 hover:bg-gray-100 p-2 rounded">
-                        <FaImage className="text-blue-500" />
-                        <span>Photo</span>
-                    </button>
-                    <button onClick={() => setShowModal(true)} className="flex items-center space-x-2 text-gray-500 hover:bg-gray-100 p-2 rounded">
-                        <FaVideo className="text-green-500" />
-                        <span>Video</span>
                     </button>
                 </div>
             </div>
@@ -107,17 +103,39 @@ const PostCreator = () => {
                             />
 
                             <div className="mt-4 space-y-3">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Add Photos</label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        onChange={(e) => setImage([...image, ...Array.from(e.target.files)])}
-                                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                    />
+                                <div className="mt-4 flex space-x-4">
+                                    <div>
+                                        <label className="flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-blue-600 transition">
+                                            <FaImage className="text-blue-500 text-xl" />
+                                            <span className="font-medium">Photos</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={(e) => setImage([...image, ...Array.from(e.target.files)])}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label className="flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-green-600 transition">
+                                            <FaVideo className="text-green-500 text-xl" />
+                                            <span className="font-medium">Videos</span>
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                multiple
+                                                onChange={(e) => setVideo([...video, ...Array.from(e.target.files)])}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Previews */}
+                                <div className="mt-4 space-y-4">
                                     {image.length > 0 && (
-                                        <div className="grid grid-cols-3 gap-2 mt-2">
+                                        <div className="grid grid-cols-3 gap-2">
                                             {image.map((file, index) => (
                                                 <div key={index} className="relative h-20 w-full">
                                                     <img src={URL.createObjectURL(file)} alt="preview" className="h-full w-full object-cover rounded" />
@@ -132,18 +150,9 @@ const PostCreator = () => {
                                             ))}
                                         </div>
                                     )}
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Add Videos</label>
-                                    <input
-                                        type="file"
-                                        accept="video/*"
-                                        multiple
-                                        onChange={(e) => setVideo([...video, ...Array.from(e.target.files)])}
-                                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                    />
+
                                     {video.length > 0 && (
-                                        <div className="mt-2 space-y-2">
+                                        <div className="space-y-2">
                                             {video.map((file, index) => (
                                                 <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                                                     <span className="text-sm truncate max-w-[200px]">{file.name}</span>

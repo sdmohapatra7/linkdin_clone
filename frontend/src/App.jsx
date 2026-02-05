@@ -8,59 +8,69 @@ import Messaging from './pages/Messaging';
 import Notifications from './pages/Notifications';
 import Jobs from './pages/Jobs';
 import Search from './pages/Search';
+import Settings from './pages/Settings';
+import { SocketProvider } from './context/SocketContext';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <SocketProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        <Route path="/" element={
-          <Layout>
-            <Home />
-          </Layout>
-        } />
+          <Route path="/" element={
+            <Layout>
+              <Home />
+            </Layout>
+          } />
 
-        <Route path="/profile" element={
-          <Layout>
-            <Profile />
-          </Layout>
-        } />
+          <Route path="/profile" element={
+            <Layout>
+              <Profile />
+            </Layout>
+          } />
 
-        <Route path="/messaging" element={
-          <Layout>
-            <Messaging />
-          </Layout>
-        } />
+          <Route path="/messaging" element={
+            <Layout>
+              <Messaging />
+            </Layout>
+          } />
 
-        <Route path="/notifications" element={
-          <Layout>
-            <Notifications />
-          </Layout>
-        } />
+          <Route path="/notifications" element={
+            <Layout>
+              <Notifications />
+            </Layout>
+          } />
 
-        <Route path="/jobs" element={
-          <Layout>
-            <Jobs />
-          </Layout>
-        } />
+          <Route path="/jobs" element={
+            <Layout>
+              <Jobs />
+            </Layout>
+          } />
 
-        <Route path="/search" element={
-          <Layout>
-            <Search />
-          </Layout>
-        } />
+          <Route path="/search" element={
+            <Layout>
+              <Search />
+            </Layout>
+          } />
 
-        {/* Fallback for other routes */}
-        <Route path="*" element={
-          <Layout>
-            <div className="text-center p-10">Page Not Found</div>
-          </Layout>
-        } />
+          <Route path="/settings" element={
+            <Layout>
+              <Settings />
+            </Layout>
+          } />
 
-      </Routes>
-    </Router>
+          {/* Fallback for other routes */}
+          <Route path="*" element={
+            <Layout>
+              <div className="text-center p-10">Page Not Found</div>
+            </Layout>
+          } />
+
+        </Routes>
+      </Router>
+    </SocketProvider>
   );
 }
 

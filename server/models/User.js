@@ -28,6 +28,10 @@ const userSchema = mongoose.Schema(
             type: String,
             default: '',
         },
+        bannerPhoto: {
+            type: String,
+            default: '',
+        },
         connections: [
             {
                 type: mongoose.Schema.Types.ObjectId,

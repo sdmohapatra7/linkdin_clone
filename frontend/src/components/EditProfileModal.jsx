@@ -17,6 +17,8 @@ const EditProfileModal = ({ show, onClose }) => {
     });
     const [profilePicture, setProfilePicture] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [bannerPhoto, setBannerPhoto] = useState(null);
+    const [bannerPreview, setBannerPreview] = useState(null);
 
     useEffect(() => {
         if (userProfile) {
@@ -27,6 +29,7 @@ const EditProfileModal = ({ show, onClose }) => {
                 skills: userProfile.skills ? userProfile.skills.join(', ') : '',
             });
             setPreview(userProfile.profilePicture || 'https://via.placeholder.com/150');
+            setBannerPreview(userProfile.bannerPhoto || 'https://via.placeholder.com/600x200');
         }
     }, [userProfile]);
 
@@ -42,6 +45,14 @@ const EditProfileModal = ({ show, onClose }) => {
         }
     };
 
+    const handleBannerChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setBannerPhoto(file);
+            setBannerPreview(URL.createObjectURL(file));
+        }
+    };
+
     const onSubmit = (e) => {
         e.preventDefault();
 
@@ -53,6 +64,10 @@ const EditProfileModal = ({ show, onClose }) => {
 
         if (profilePicture) {
             data.append('profilePicture', profilePicture);
+        }
+
+        if (bannerPhoto) {
+            data.append('bannerPhoto', bannerPhoto);
         }
 
         // Pass token implicitly via slice/service or if needed in args
@@ -85,6 +100,24 @@ const EditProfileModal = ({ show, onClose }) => {
                 </div>
 
                 <form onSubmit={onSubmit} className="p-6 space-y-4">
+                    {/* Banner Photo Upload */}
+                    <div className="relative mb-6">
+                        <img
+                            src={bannerPreview}
+                            alt="Banner"
+                            className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        />
+                        <label className="absolute bottom-2 right-2 bg-white/80 p-2 rounded-full cursor-pointer hover:bg-white text-gray-700 transition shadow-sm">
+                            <FaCamera size={16} />
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleBannerChange}
+                            />
+                        </label>
+                    </div>
+
                     {/* Profile Picture Upload */}
                     <div className="flex justify-center mb-6 relative">
                         <div className="relative">
