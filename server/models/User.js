@@ -38,6 +38,18 @@ const userSchema = mongoose.Schema(
                 ref: 'User',
             },
         ],
+        followers: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+            },
+        ],
+        following: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User',
+            },
+        ],
         role: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Role',

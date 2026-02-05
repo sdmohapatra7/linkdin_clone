@@ -118,4 +118,56 @@ const getUsers = async (req, res) => {
     res.json(users);
 };
 
-module.exports = { getUser, updateUser, getUsers };
+// @desc    Follow a user
+// @route   PUT /api/users/follow/:id
+// @access  Private
+const followUser = async (req, res) => {
+    if (req.user.id === req.params.id) {
+        res.status(400);
+        throw new Error('You cannot follow yourself');
+    }
+
+    const userToFollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
+
+    if (userToFollow && currentUser) {
+        if (!userToFollow.followers.includes(req.user.id)) {
+            await userToFollow.updateOne({ $push: { followers: req.user.id } });
+            await currentUser.updateOne({ $push: { following: req.params.id } });
+            res.status(200).json({ message: 'User followed' });
+        } else {
+            res.status(400).json({ message: 'You already follow this user' });
+        }
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+}
+
+// @desc    Unfollow a user
+// @route   PUT /api/users/unfollow/:id
+// @access  Private
+const unfollowUser = async (req, res) => {
+    if (req.user.id === req.params.id) {
+        res.status(400);
+        throw new Error('You cannot unfollow yourself');
+    }
+
+    const userToUnfollow = await User.findById(req.params.id);
+    const currentUser = await User.findById(req.user.id);
+
+    if (userToUnfollow && currentUser) {
+        if (userToUnfollow.followers.includes(req.user.id)) {
+            await userToUnfollow.updateOne({ $pull: { followers: req.user.id } });
+            await currentUser.updateOne({ $pull: { following: req.params.id } });
+            res.status(200).json({ message: 'User unfollowed' });
+        } else {
+            res.status(400).json({ message: 'You do not follow this user' });
+        }
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+}
+
+module.exports = { getUser, updateUser, getUsers, followUser, unfollowUser };

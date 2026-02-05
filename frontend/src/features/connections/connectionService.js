@@ -51,16 +51,38 @@ const getConnections = async (token) => {
     return response.data;
 }
 
-// Get suggestions (using getUsers from user API, but logically handled here for UI)
-// Actually suggestions usually come from Users API (getAllUsers)
-// So we might use userService for that, or here.
-// Let's stick to requests here.
+// Send connection request
+const sendConnectionRequest = async (receiverId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.post(API_URL + 'request', { receiverId }, config);
+    return response.data;
+}
+
+// Get suggestions (using getUsers from user API)
+// Ideally this should be in userService, but we'll include it here for simplicity in this context
+const getSuggestions = async (token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.get('http://localhost:5000/api/users', config);
+    return response.data;
+}
 
 const connectionService = {
     getRequests,
     acceptRequest,
     withdrawRequest,
     getConnections,
+    sendConnectionRequest,
+    getSuggestions
 };
 
 export default connectionService;

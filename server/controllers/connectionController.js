@@ -77,6 +77,13 @@ const acceptConnectionRequest = async (req, res) => {
     sender.connections.push(receiver._id);
     receiver.connections.push(sender._id);
 
+    // Mutual Follow on Connection
+    sender.following.push(receiver._id);
+    sender.followers.push(receiver._id);
+
+    receiver.following.push(sender._id);
+    receiver.followers.push(sender._id);
+
     await sender.save();
     await receiver.save();
 

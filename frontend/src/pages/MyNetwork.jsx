@@ -1,26 +1,51 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { getConnections, getRequests, acceptRequest, withdrawRequest } from '../features/connections/connectionSlice';
+import { getConnections, getRequests, acceptRequest, withdrawRequest, sendConnectionRequest } from '../features/connections/connectionSlice';
+import connectionService from '../features/connections/connectionService';
 import { accessChat } from '../features/chat/chatSlice';
 import Spinner from '../components/Spinner';
 import ConnectionCard from '../components/ConnectionCard';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 const MyNetwork = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { requests, connections, isLoading } = useSelector((state) => state.connection);
-
-    // Mock suggestions for now as we don't have a "get all users" in connection slice yet (can add later)
-    const suggestions = [
-        { _id: '3', name: 'Alice Johnson', headline: 'Frontend Developer', profilePicture: '' },
-        { _id: '4', name: 'Bob Williams', headline: 'Backend Developer', profilePicture: '' },
-    ];
+    const { user } = useSelector((state) => state.auth);
+    const [suggestions, setSuggestions] = useState([]);
 
     useEffect(() => {
         dispatch(getRequests());
         dispatch(getConnections());
-    }, [dispatch]);
+
+        // Fetch suggestions
+        if (user && user.token) {
+            connectionService.getSuggestions(user.token)
+                .then(data => {
+                    // Filter out existing connections and self
+                    // This is a basic client-side filter. Ideally backend should do this.
+                    // Also filter out pending requests if possible, but we might not have that list fully sync'd here easily without checking `requests` state which contains RECEIVED requests, but not SENT ones.
+                    // For now, just show all users except self.
+                    setSuggestions(data);
+                })
+                .catch(err => console.error(err));
+        }
+    }, [dispatch, user]);
+
+    const handleConnect = (id) => {
+        dispatch(sendConnectionRequest(id))
+            .unwrap()
+            .then(() => {
+                toast.success('Connection request sent!');
+                // Update local state to show "Pending"
+                setSuggestions(suggestions.map(u =>
+                    u._id === id ? { ...u, connectionStatus: 'pending' } : u
+                ));
+            })
+            .catch((err) => toast.error(err));
+    };
 
     const handleAccept = (id) => {
         dispatch(acceptRequest(id));
@@ -101,7 +126,11 @@ const MyNetwork = () => {
                 <div className="p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {suggestions.map((user) => (
-                            <ConnectionCard key={user._id} user={user} />
+                            <ConnectionCard
+                                key={user._id}
+                                user={user}
+                                onConnect={handleConnect}
+                            />
                         ))}
                     </div>
                 </div>
