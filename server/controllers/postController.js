@@ -89,10 +89,16 @@ function projectIdToUrlPath(p) {
 // @route   GET /api/posts
 // @access  Private
 const getPosts = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const posts = await Post.find()
         .populate('user', 'name profilePicture headline')
         .populate('comments.user', 'name profilePicture headline')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
     res.status(200).json(posts);
 };

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/message/';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/api/message/';
 
 // Get all messages
 const allMessages = async (chatId, token) => {
@@ -33,9 +33,22 @@ const sendMessage = async (messageData, token) => {
     return response.data;
 };
 
+// Mark messages as read
+const markMessagesAsRead = async (chatId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.put(API_URL + 'read', { chatId }, config);
+    return response.data;
+};
+
 const messageService = {
     allMessages,
     sendMessage,
+    markMessagesAsRead,
 };
 
 export default messageService;

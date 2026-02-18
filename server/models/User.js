@@ -23,6 +23,10 @@ const userSchema = mongoose.Schema(
             type: String,
             default: '',
         },
+        location: {
+            type: String,
+            default: '',
+        },
         skills: [String],
         profilePicture: {
             type: String,
@@ -59,6 +63,8 @@ const userSchema = mongoose.Schema(
             required: true,
             default: false,
         },
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
     },
     {
         timestamps: true,

@@ -6,6 +6,8 @@ const initialState = {
     isError: false,
     isSuccess: false,
     isLoading: false,
+    hasMore: true,
+    page: 1,
     message: '',
     uploadProgress: 0,
 };
@@ -34,10 +36,10 @@ export const createPost = createAsyncThunk(
 // Get user posts
 export const getPosts = createAsyncThunk(
     'posts/getAll',
-    async (_, thunkAPI) => {
+    async (page, thunkAPI) => {
         try {
             const token = thunkAPI.getState().auth.user.token;
-            return await postService.getPosts(token);
+            return await postService.getPosts(token, page);
         } catch (error) {
             const message =
                 (error.response &&
@@ -95,6 +97,8 @@ export const postSlice = createSlice({
             state.isLoading = false;
             state.message = '';
             state.uploadProgress = 0;
+            state.page = 1;
+            state.hasMore = true;
         },
         setUploadProgress: (state, action) => {
             state.uploadProgress = action.payload;
@@ -121,7 +125,13 @@ export const postSlice = createSlice({
             .addCase(getPosts.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                state.posts = action.payload;
+                if (action.meta.arg > 1) {
+                    state.posts = [...state.posts, ...action.payload];
+                } else {
+                    state.posts = action.payload;
+                }
+                state.page = action.meta.arg || 1;
+                state.hasMore = action.payload.length === 10;
             })
             .addCase(getPosts.rejected, (state, action) => {
                 state.isLoading = false;

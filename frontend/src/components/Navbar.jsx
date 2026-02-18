@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { toast } from 'react-toastify';
 import { logout, reset } from '../features/auth/authSlice';
 import { useSocket } from '../context/SocketContext';
 import { BsBellFill } from 'react-icons/bs';
@@ -23,6 +24,7 @@ const Navbar = () => {
         if (socket) {
             const handleNewNotification = (notification) => {
                 dispatch(addNotification(notification));
+                toast.info(`New ${notification.type}: ${notification.sender.name}`);
             };
 
             socket.on('notification received', handleNewNotification);

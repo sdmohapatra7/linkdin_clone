@@ -116,4 +116,29 @@ const sendMessage = asyncHandler(async (req, res) => {
     }
 });
 
-module.exports = { allMessages, sendMessage };
+const markMessagesAsRead = asyncHandler(async (req, res) => {
+    const { chatId } = req.body;
+
+    if (!chatId) {
+        res.status(400);
+        throw new Error('Chat ID is required');
+    }
+
+    // Update all messages in this chat where user is NOT in readBy array
+    await Message.updateMany(
+        { chat: chatId, readBy: { $ne: req.user._id } },
+        { $addToSet: { readBy: req.user._id } }
+    );
+
+    // Emit socket event so other users see it's read
+    // We need to fetch the chat to know who to emit to? 
+    // Or just emit to the chat room
+    const io = req.app.get('io');
+    if (io) {
+        io.in(chatId).emit('messages read', { chatId, userId: req.user._id });
+    }
+
+    res.status(200).json({ success: true });
+});
+
+module.exports = { allMessages, sendMessage, markMessagesAsRead };

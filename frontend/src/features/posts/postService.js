@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/posts/';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/api/posts/';
 
 // Create new post
 const createPost = async (postData, token, onUploadProgress) => {
@@ -26,14 +26,14 @@ const createPost = async (postData, token, onUploadProgress) => {
 };
 
 // Get user posts
-const getPosts = async (token) => {
+const getPosts = async (token, page = 1) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
 
-    const response = await axios.get(API_URL, config);
+    const response = await axios.get(API_URL + `?page=${page}&limit=10`, config);
 
     return response.data;
 };

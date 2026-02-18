@@ -26,6 +26,7 @@ const updateUser = async (req, res) => {
         user.name = req.body.name || user.name;
         user.headline = req.body.headline || user.headline;
         user.about = req.body.about || user.about;
+        user.location = req.body.location || user.location;
 
         // Handle skills (check if it is a string or array)
         if (req.body.skills) {
@@ -49,7 +50,7 @@ const updateUser = async (req, res) => {
                 fs.renameSync(oldPath, newPath);
 
                 const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
-                user.profilePicture = `http://localhost:5000/${relativePath}`;
+                user.profilePicture = `${process.env.BASE_URL}/${relativePath}`;
             }
 
             // Handle Banner Photo
@@ -62,7 +63,7 @@ const updateUser = async (req, res) => {
                 fs.renameSync(oldPath, newPath);
 
                 const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
-                user.bannerPhoto = `http://localhost:5000/${relativePath}`;
+                user.bannerPhoto = `${process.env.BASE_URL}/${relativePath}`;
             }
         } else if (req.file) {
             // Fallback for single file upload legacy support specifically for profilePicture if mistakenly used
@@ -79,7 +80,7 @@ const updateUser = async (req, res) => {
             fs.renameSync(oldPath, newPath);
 
             const relativePath = path.join('uploads', 'user', newFilename).replace(/\\/g, '/');
-            user.profilePicture = `http://localhost:5000/${relativePath}`;
+            user.profilePicture = `${process.env.BASE_URL}/${relativePath}`;
         }
 
         const updatedUser = await user.save();
@@ -91,7 +92,9 @@ const updateUser = async (req, res) => {
             headline: updatedUser.headline,
             profilePicture: updatedUser.profilePicture,
             bannerPhoto: updatedUser.bannerPhoto,
+            bannerPhoto: updatedUser.bannerPhoto,
             about: updatedUser.about,
+            location: updatedUser.location,
             skills: updatedUser.skills,
             token: req.body.token,
         });
@@ -170,4 +173,101 @@ const unfollowUser = async (req, res) => {
     }
 }
 
-module.exports = { getUser, updateUser, getUsers, followUser, unfollowUser };
+
+
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+
+// @desc    Forgot Password
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    // Get Reset Token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    user.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Set expire (10 minutes)
+    user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+    const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+    try {
+        // In real app, send email here
+        // await sendEmail({
+        //   email: user.email,
+        //   subject: 'Password Reset Token',
+        //   message,
+        // });
+
+        console.log('----------------------------------------------------');
+        console.log(`To: ${user.email}`);
+        console.log(`Subject: Password Reset Request`);
+        console.log(`Message: ${message}`);
+        console.log('----------------------------------------------------');
+
+        res.status(200).json({ success: true, data: 'Email sent (check server console)' });
+    } catch (err) {
+        console.log(err);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save();
+
+        res.status(500);
+        throw new Error('Email could not be sent');
+    }
+};
+
+// @desc    Reset Password
+// @route   PUT /api/users/reset-password/:resetToken
+// @access  Public
+const resetPassword = async (req, res) => {
+    // Get hashed token
+    const resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(req.params.resetToken)
+        .digest('hex');
+
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        res.status(400);
+        throw new Error('Invalid token');
+    }
+
+    // Set new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(req.body.password, salt);
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+        success: true,
+        data: 'Password updated success',
+    });
+};
+
+module.exports = { getUser, updateUser, getUsers, followUser, unfollowUser, forgotPassword, resetPassword };

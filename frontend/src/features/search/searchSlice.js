@@ -11,10 +11,10 @@ const initialState = {
 
 export const searchGlobal = createAsyncThunk(
     'search/global',
-    async (keyword, thunkAPI) => {
+    async (filters, thunkAPI) => {
         try {
             const token = thunkAPI.getState().auth.user.token;
-            return await searchService.search(keyword, token);
+            return await searchService.search(filters, token);
         } catch (error) {
             const message =
                 (error.response && error.response.data && error.response.data.message) ||

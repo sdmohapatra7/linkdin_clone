@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/connections/';
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/api/connections/';
 
 // Get connection requests
 const getRequests = async (token) => {
@@ -72,7 +72,7 @@ const getSuggestions = async (token) => {
         },
     };
 
-    const response = await axios.get('http://localhost:5000/api/users', config);
+    const response = await axios.get(import.meta.env.VITE_API_BASE_URL + '/api/users', config);
     return response.data;
 }
 

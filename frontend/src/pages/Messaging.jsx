@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchChats, accessChat, setSelectedChat, createGroupChat } from '../features/chat/chatSlice';
-import { allMessages, sendMessage, addMessage } from '../features/messages/messageSlice';
+import { allMessages, sendMessage, addMessage, markMessagesAsRead, setMessages } from '../features/messages/messageSlice';
 import { getConnections } from '../features/connections/connectionSlice';
 import io from 'socket.io-client';
 import EmojiPicker from 'emoji-picker-react';
 import { FaSmile, FaPaperclip, FaTimes, FaEdit, FaInfoCircle } from 'react-icons/fa';
 
-const ENDPOINT = 'http://localhost:5000';
+const ENDPOINT = import.meta.env.VITE_API_BASE_URL;
 var socket, selectedChatCompare;
 
 const Messaging = () => {
@@ -59,6 +59,7 @@ const Messaging = () => {
         if (!selectedChat) return;
 
         dispatch(allMessages(selectedChat._id));
+        dispatch(markMessagesAsRead(selectedChat._id));
 
         socket.emit('join chat', selectedChat._id);
         selectedChatCompare = selectedChat;
@@ -66,7 +67,7 @@ const Messaging = () => {
 
     // Listen for new messages
     useEffect(() => {
-        socket.on('message received', (newMessageReceived) => {
+        const messageReceivedHandler = (newMessageReceived) => {
             if (
                 !selectedChatCompare ||
                 selectedChatCompare._id !== newMessageReceived.chat._id
@@ -75,10 +76,31 @@ const Messaging = () => {
                 console.log("Notification: New message from " + newMessageReceived.sender.name);
             } else {
                 dispatch(addMessage(newMessageReceived));
+                // If we are in the chat, mark it as read immediately
+                dispatch(markMessagesAsRead(selectedChatCompare._id));
             }
-        });
+        };
+
+        const messagesReadHandler = ({ chatId, userId }) => {
+            if (selectedChatCompare && selectedChatCompare._id === chatId) {
+                // Update local messages state to reflect they are read
+                // We need to access the current messages from state, but inside useEffect we might have stale state if not careful.
+                // A better way is to dispatch an action to update redux state.
+                // We can fetch messages again, or update locally.
+                // To correspond with a specific user reading it, we'd add their ID to readBy.
+                // For now, let's just re-fetch messages or a dedicated action.
+                // Re-fetching is safest for consistency but maybe fewer perfs.
+                // Let's try re-fetching for simplicity first.
+                dispatch(allMessages(chatId));
+            }
+        };
+
+        socket.on('message received', messageReceivedHandler);
+        socket.on('messages read', messagesReadHandler);
+
         return () => {
-            socket.off("message received");
+            socket.off("message received", messageReceivedHandler);
+            socket.off("messages read", messagesReadHandler);
         };
     }, [dispatch]);
 
@@ -349,8 +371,17 @@ const Messaging = () => {
                                                 </div>
                                             )}
                                             <p className="text-sm">{m.content}</p>
-                                            <span className={`text-[10px] block text-right mt-1 ${m.sender._id === user._id ? 'text-blue-100' : 'text-gray-400'}`}>
+                                            <span className={`text-[10px] block text-right mt-1 flex items-center justify-end gap-1 ${m.sender._id === user._id ? 'text-blue-100' : 'text-gray-400'}`}>
                                                 {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {m.sender._id === user._id && (
+                                                    <span>
+                                                        {m.readBy && m.readBy.some(id => id !== user._id) ? (
+                                                            <span className="text-blue-300 font-bold">✓✓</span> // Blue double tick (Read)
+                                                        ) : (
+                                                            <span className="text-blue-200">✓✓</span> // Gray/Light double tick (Delivered/Unread by others)
+                                                        )}
+                                                    </span>
+                                                )}
                                             </span>
                                         </div>
                                     </div>

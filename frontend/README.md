@@ -1,16 +1,59 @@
-# React + Vite
+# Chat App Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend client for the Chat Application, built with React, Redux Toolkit, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Responsive UI**: Modern, responsive design with clear navigation.
+*   **State Management**: Redux Toolkit for managing global state (Auth, Chat, Posts, Search).
+*   **Real-time Communication**: Socket.io client for instant messaging and notifications.
+*   **Media Support**: Send images, videos, and emojis in chats.
+*   **Search**: Advanced search with filters for location, role, and skills.
+*   **Feed**: Infinite scroll feed for user posts.
 
-## React Compiler
+## Configuration
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project uses Vite. Configuration is in `vite.config.js`.
 
-## Expanding the ESLint configuration
+Environment variables are stored in `.env`:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+## Installation & Running
+
+1.  Navigate to the directory:
+    ```bash
+    cd frontend
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Start the development server:
+    ```bash
+    npm run dev -- --host
+    ```
+
+4.  The application will be available at `http://localhost:3000`.
+
+## Key Dependencies
+
+*   `react` & `react-dom`
+*   `@reduxjs/toolkit` & `react-redux`
+*   `react-router-dom`
+*   `axios`
+*   `socket.io-client`
+*   `react-icons`
+*   `emoji-picker-react`
+*   `react-toastify`
+
+## Directory Structure
+
+*   `src/components`: Reusable UI components (Navbar, Footer, etc.)
+*   `src/features`: Redux slices and API services (Auth, Chat, Posts, etc.)
+*   `src/pages`: Main application pages (Home, Login, Messaging, Profile, etc.)
+*   `src/context`: React Context providers (SocketContext)

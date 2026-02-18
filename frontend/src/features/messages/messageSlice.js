@@ -45,6 +45,26 @@ export const sendMessage = createAsyncThunk(
     }
 );
 
+
+
+export const markMessagesAsRead = createAsyncThunk(
+    'message/markRead',
+    async (chatId, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await messageService.markMessagesAsRead(chatId, token);
+        } catch (error) {
+            const message =
+                (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                error.message ||
+                error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const messageSlice = createSlice({
     name: 'message',
     initialState,
@@ -53,6 +73,9 @@ export const messageSlice = createSlice({
             if (!state.messages.some(m => m._id === action.payload._id)) {
                 state.messages = [...state.messages, action.payload];
             }
+        },
+        setMessages: (state, action) => {
+            state.messages = action.payload;
         },
         resetMessages: (state) => initialState,
     },
@@ -73,9 +96,15 @@ export const messageSlice = createSlice({
             })
             .addCase(sendMessage.fulfilled, (state, action) => {
                 state.messages = [...state.messages, action.payload];
+            })
+            .addCase(markMessagesAsRead.fulfilled, (state, action) => {
+                // Should we update state? state.messages might need to be updated.
+                // But usually we rely on socket event to update state to match other users.
+                // For optimistic UI, we could update here.
+                // Let's rely on socket for now or just ignore if we don't need instant feedback on our own read action (since we know we read it).
             });
     },
 });
 
-export const { addMessage, resetMessages } = messageSlice.actions;
+export const { addMessage, resetMessages, setMessages } = messageSlice.actions;
 export default messageSlice.reducer;
