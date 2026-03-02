@@ -5,8 +5,12 @@ const Footer = () => {
     const location = useLocation();
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/forgot-password' || location.pathname.startsWith('/reset-password');
 
+    if (isAuthPage) {
+        return null;
+    }
+
     return (
-        <footer className={`bg-white border-t border-gray-200 pt-12 pb-8 mt-auto ${!isAuthPage ? 'sm:ml-16' : ''}`}>
+        <footer className={`bg-white border-t border-gray-200 pt-12 pb-8 mt-auto sm:ml-16`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Brand Column */}
