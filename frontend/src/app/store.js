@@ -10,6 +10,7 @@ import jobReducer from '../features/jobs/jobSlice';
 import searchReducer from '../features/search/searchSlice';
 
 import roleReducer from '../features/roles/roleSlice';
+import groupReducer from '../features/groups/groupSlice';
 
 export const store = configureStore({
     reducer: {
@@ -23,5 +24,6 @@ export const store = configureStore({
         job: jobReducer,
         search: searchReducer,
         role: roleReducer,
+        group: groupReducer,
     },
 });

@@ -7,13 +7,14 @@ import PostCreator from '../components/PostCreator';
 import Spinner from '../components/Spinner';
 import CommentSection from '../components/CommentSection';
 import { useSocket } from '../context/SocketContext';
+import useIntersectionObserver from '../hooks/useIntersectionObserver';
 
 const Home = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { user } = useSelector((state) => state.auth);
-    const { posts, isLoading, isError, message } = useSelector(
+    const { posts, isLoading, isError, message, hasMore } = useSelector(
         (state) => state.post
     );
 
@@ -48,7 +49,7 @@ const Home = () => {
         } else {
             // Only fetch if posts are empty or we are on page 1
             if (posts.length === 0) {
-                dispatch(getPosts(1));
+                dispatch(getPosts({ page: 1 }));
             }
         }
 
@@ -87,10 +88,14 @@ const Home = () => {
     }, [socket, dispatch]);
 
     const loadMore = () => {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        dispatch(getPosts(nextPage));
+        if (!isLoading && hasMore) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            dispatch(getPosts({ page: nextPage }));
+        }
     };
+
+    const { targetRef } = useIntersectionObserver(loadMore, [isLoading, hasMore, page]);
 
     if (isLoading && page === 1) {
         return <Spinner />;
@@ -153,19 +158,16 @@ const Home = () => {
                         </div>
                     ))}
 
-                    {/* Load More Button */}
-                    <div className="flex justify-center py-4">
-                        {isLoading ? (
-                            <Spinner />
-                        ) : (
-                            <button
-                                onClick={loadMore}
-                                className="bg-white text-blue-600 border border-blue-600 px-4 py-2 rounded-full hover:bg-blue-50 font-semibold"
-                            >
-                                Load More
-                            </button>
-                        )}
-                    </div>
+                    {/* Infinite Scroll Observer Target */}
+                    {hasMore && (
+                        <div ref={targetRef} className="flex justify-center py-4">
+                            {isLoading && <Spinner />}
+                        </div>
+                    )}
+
+                    {!hasMore && posts.length > 0 && (
+                        <div className="text-center text-gray-500 py-4">You have caught up on all posts.</div>
+                    )}
                 </>
             ) : (
                 <div className="text-center text-gray-500">No posts yet</div>

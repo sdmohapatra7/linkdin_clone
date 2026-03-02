@@ -23,6 +23,7 @@ const createPost = async (req, res) => {
     const newPost = new Post({
         text: req.body.text,
         user: req.user.id,
+        group: req.body.groupId || null,
         image: [],
         video: []
     });
@@ -93,9 +94,35 @@ const getPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const posts = await Post.find()
-        .populate('user', 'name profilePicture headline')
-        .populate('comments.user', 'name profilePicture headline')
+    const query = {};
+    if (req.query.groupId) {
+        query.group = req.query.groupId;
+    } else {
+        // Build a personalized feed array
+        const currentUser = await User.findById(req.user.id).select('connections following');
+
+        let feedUsers = [req.user.id]; // always see your own posts
+
+        if (currentUser) {
+            if (currentUser.connections && currentUser.connections.length > 0) {
+                feedUsers = [...feedUsers, ...currentUser.connections];
+            }
+            if (currentUser.following && currentUser.following.length > 0) {
+                feedUsers = [...feedUsers, ...currentUser.following];
+            }
+        }
+
+        // Ensure array holds unique IDs natively
+        const uniqueFeedUsers = [...new Set(feedUsers.map(id => id.toString()))];
+
+        // Exclude group posts from the main general feed, and only show posts from feedUsers
+        query.group = null;
+        query.user = { $in: uniqueFeedUsers };
+    }
+
+    const posts = await Post.find(query)
+        .populate('user', 'name profilePicture title headline')
+        .populate('comments.user', 'name profilePicture title headline')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);

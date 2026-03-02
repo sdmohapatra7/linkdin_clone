@@ -11,8 +11,11 @@ import Notifications from './pages/Notifications';
 import MyNetwork from './pages/MyNetwork';
 import Jobs from './pages/Jobs';
 import Search from './pages/Search';
+import Groups from './pages/Groups';
+import GroupDetails from './pages/GroupDetails';
 import Settings from './pages/Settings';
 import AdminDashboard from './pages/AdminDashboard';
+import Footer from './components/Footer';
 import { SocketProvider } from './context/SocketContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -69,6 +72,18 @@ function App() {
             </Layout>
           } />
 
+          <Route path="/groups" element={
+            <Layout>
+              <Groups />
+            </Layout>
+          } />
+
+          <Route path="/groups/:id" element={
+            <Layout>
+              <GroupDetails />
+            </Layout>
+          } />
+
           <Route path="/settings" element={
             <Layout>
               <Settings />
@@ -89,6 +104,7 @@ function App() {
           } />
 
         </Routes>
+        <Footer />
       </Router>
       <ToastContainer />
     </SocketProvider>

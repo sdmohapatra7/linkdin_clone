@@ -56,12 +56,25 @@ const updateJob = async (jobId, jobData, token) => {
     return response.data;
 };
 
+// Get applicants for a job
+const getJobApplicants = async (jobId, token) => {
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+    const response = await axios.get(API_URL + jobId + '/applicants', config);
+    return response.data;
+};
+
 const jobService = {
     createJob,
     getJobs,
     applyJob,
     deleteJob,
     updateJob,
+    getJobApplicants,
 };
 
 export default jobService;

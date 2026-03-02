@@ -49,7 +49,7 @@ const CreateJobModal = ({ onClose, jobToEdit }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity">
             <div className="bg-white rounded-lg w-full max-w-lg p-6 relative">
                 <button
                     onClick={onClose}

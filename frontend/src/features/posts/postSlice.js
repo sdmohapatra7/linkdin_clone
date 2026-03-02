@@ -36,10 +36,10 @@ export const createPost = createAsyncThunk(
 // Get user posts
 export const getPosts = createAsyncThunk(
     'posts/getAll',
-    async (page, thunkAPI) => {
+    async ({ page = 1, groupId = null }, thunkAPI) => {
         try {
             const token = thunkAPI.getState().auth.user.token;
-            return await postService.getPosts(token, page);
+            return await postService.getPosts(token, page, groupId);
         } catch (error) {
             const message =
                 (error.response &&
@@ -125,12 +125,13 @@ export const postSlice = createSlice({
             .addCase(getPosts.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.isSuccess = true;
-                if (action.meta.arg > 1) {
+                const page = action.meta.arg?.page || 1;
+                if (page > 1) {
                     state.posts = [...state.posts, ...action.payload];
                 } else {
                     state.posts = action.payload;
                 }
-                state.page = action.meta.arg || 1;
+                state.page = page;
                 state.hasMore = action.payload.length === 10;
             })
             .addCase(getPosts.rejected, (state, action) => {

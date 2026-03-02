@@ -26,14 +26,19 @@ const createPost = async (postData, token, onUploadProgress) => {
 };
 
 // Get user posts
-const getPosts = async (token, page = 1) => {
+const getPosts = async (token, page = 1, groupId = null) => {
     const config = {
         headers: {
             Authorization: `Bearer ${token}`,
         },
     };
 
-    const response = await axios.get(API_URL + `?page=${page}&limit=10`, config);
+    let url = API_URL + `?page=${page}&limit=10`;
+    if (groupId) {
+        url += `&groupId=${groupId}`;
+    }
+
+    const response = await axios.get(url, config);
 
     return response.data;
 };

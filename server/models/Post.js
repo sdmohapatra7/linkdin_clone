@@ -7,6 +7,11 @@ const postSchema = mongoose.Schema(
             required: true,
             ref: 'User',
         },
+        group: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Group',
+            default: null,
+        },
         text: {
             type: String,
             required: true,
@@ -50,5 +55,7 @@ const postSchema = mongoose.Schema(
         timestamps: true,
     }
 );
+
+postSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Post', postSchema);

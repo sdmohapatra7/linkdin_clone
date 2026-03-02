@@ -1,19 +1,21 @@
-# Chat App Frontend
+# JobsHub Frontend
 
-This is the frontend client for the Chat Application, built with React, Redux Toolkit, and Vite.
+This is the frontend client for JobsHub, a professional networking and job search platform featuring a modern UI and real-time connectivity. Built with React, Redux Toolkit, and Vite.
 
-## Features
+## Core Features
 
-*   **Responsive UI**: Modern, responsive design with clear navigation.
-*   **State Management**: Redux Toolkit for managing global state (Auth, Chat, Posts, Search).
-*   **Real-time Communication**: Socket.io client for instant messaging and notifications.
-*   **Media Support**: Send images, videos, and emojis in chats.
-*   **Search**: Advanced search with filters for location, role, and skills.
-*   **Feed**: Infinite scroll feed for user posts.
+*   **Role-Based Access**: Dedicated interfaces for Job Seekers and Recruiters.
+*   **Job Board**: Post jobs (Recruiters), apply with Easy Apply (Seekers), and manage applicant tracking.
+*   **Professional Networking**: Build a connection network, similar to LinkedIn, with full connection lifecycle management.
+*   **Groups & Communities**: Create and join professional groups with dedicated discussion boards.
+*   **Real-time Messaging**: Instant one-on-one messaging powered by Socket.io, including media sharing and read receipts.
+*   **Interactive Feed**: Infinite scroll feed for sharing updates, articles, and media with your network.
+*   **Advanced Search**: Discover professionals, companies, and opportunities using multi-faceted search algorithms.
+*   **Authentication Flow**: Modern split-screen authentication with an intuitive 3-step signup wizard.
 
 ## Configuration
 
-This project uses Vite. Configuration is in `vite.config.js`.
+This project uses Vite. Configuration is located in `vite.config.js`.
 
 Environment variables are stored in `.env`:
 
@@ -40,20 +42,17 @@ VITE_API_BASE_URL=http://localhost:8000
 
 4.  The application will be available at `http://localhost:3000`.
 
-## Key Dependencies
+## Tech Stack & Dependencies
 
-*   `react` & `react-dom`
-*   `@reduxjs/toolkit` & `react-redux`
-*   `react-router-dom`
-*   `axios`
-*   `socket.io-client`
-*   `react-icons`
-*   `emoji-picker-react`
-*   `react-toastify`
+*   **Framework**: `react`, `react-dom`
+*   **State Management**: `@reduxjs/toolkit`, `react-redux`
+*   **Routing**: `react-router-dom`
+*   **Networking**: `axios`, `socket.io-client`
+*   **Styling**: `tailwindcss`, `react-icons`
 
 ## Directory Structure
 
-*   `src/components`: Reusable UI components (Navbar, Footer, etc.)
-*   `src/features`: Redux slices and API services (Auth, Chat, Posts, etc.)
-*   `src/pages`: Main application pages (Home, Login, Messaging, Profile, etc.)
-*   `src/context`: React Context providers (SocketContext)
+*   `src/components`: Reusable UI components (Navbar, Footer, Modals, Forms)
+*   `src/features`: Redux state slices and encapsulated API services
+*   `src/pages`: Main application views (Network, Jobs, Messaging, User Profiles)
+*   `src/context`: React Context providers (Socket integration)

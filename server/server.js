@@ -50,7 +50,7 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/message', require('./routes/messageRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
-app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/groups', require('./routes/groupRoutes'));
 app.use('/api/search', require('./routes/searchRoutes'));
 app.use('/api/roles', require('./routes/roleRoutes'));
 

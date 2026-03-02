@@ -3,6 +3,7 @@ import jobService from './jobService';
 
 const initialState = {
     jobs: [],
+    applicants: [], // For recruiter view
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -78,6 +79,20 @@ export const updateJob = createAsyncThunk(
     }
 );
 
+// Get Job Applicants (Recruiter Only)
+export const getJobApplicants = createAsyncThunk(
+    'jobs/getApplicants',
+    async (jobId, thunkAPI) => {
+        try {
+            const token = thunkAPI.getState().auth.user.token;
+            return await jobService.getJobApplicants(jobId, token);
+        } catch (error) {
+            const message = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
+            return thunkAPI.rejectWithValue(message);
+        }
+    }
+);
+
 export const jobSlice = createSlice({
     name: 'job',
     initialState,
@@ -124,6 +139,19 @@ export const jobSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.jobs = state.jobs.map((job) => (job._id === action.payload._id ? action.payload : job));
+            })
+            .addCase(getJobApplicants.pending, (state) => {
+                state.isLoading = true;
+            })
+            .addCase(getJobApplicants.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.isSuccess = true;
+                state.applicants = action.payload; // Store requested applicants temporarily
+            })
+            .addCase(getJobApplicants.rejected, (state, action) => {
+                state.isLoading = false;
+                state.isError = true;
+                state.message = action.payload;
             });
     },
 });

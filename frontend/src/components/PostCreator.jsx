@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createPost } from '../features/posts/postSlice';
 import { FaImage, FaVideo, FaTimes } from 'react-icons/fa';
 
-const PostCreator = () => {
+const PostCreator = ({ groupId = null }) => {
     const [text, setText] = useState('');
     const [image, setImage] = useState([]);
     const [video, setVideo] = useState([]);
@@ -25,6 +25,9 @@ const PostCreator = () => {
 
         const formData = new FormData();
         formData.append('text', text);
+        if (groupId) {
+            formData.append('groupId', groupId);
+        }
 
         image.forEach((file) => {
             formData.append('image', file);

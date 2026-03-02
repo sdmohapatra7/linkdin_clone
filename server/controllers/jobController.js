@@ -12,7 +12,11 @@ const createJob = asyncHandler(async (req, res) => {
         throw new Error('Please add all required fields');
     }
 
-    // Optional: Check if user is admin (req.user.isAdmin) - for now allowing anyone
+    // Role Enforcement: Only Admit Recruiters or Admins
+    if (!req.user.isAdmin && req.user.role?.name !== 'Recruiter') {
+        res.status(401);
+        throw new Error('User not authorized. Only Recruiters can post jobs.');
+    }
 
     const job = await Job.create({
         title,
@@ -54,6 +58,12 @@ const getJobById = asyncHandler(async (req, res) => {
 // @route   PUT /api/jobs/:id/apply
 // @access  Private
 const applyForJob = asyncHandler(async (req, res) => {
+    // Role Enforcement: Prevent Recruiters from Applying
+    if (req.user.role?.name === 'Recruiter') {
+        res.status(400);
+        throw new Error('Recruiters cannot apply for jobs.');
+    }
+
     const job = await Job.findById(req.params.id);
 
     if (job) {
@@ -119,6 +129,26 @@ const updateJob = asyncHandler(async (req, res) => {
     res.status(200).json(updatedJob);
 });
 
+// @desc    Fetch Job Applicants
+// @route   GET /api/jobs/:id/applicants
+// @access  Private (Owner/Admin)
+const getJobApplicants = asyncHandler(async (req, res) => {
+    const job = await Job.findById(req.params.id).populate('applicants', 'name profilePicture headline email skills');
+
+    if (!job) {
+        res.status(404);
+        throw new Error('Job not found');
+    }
+
+    // Authorization verification
+    if (job.postedBy.toString() !== req.user.id && !req.user.isAdmin) {
+        res.status(401);
+        throw new Error('User not authorized to view these applicants');
+    }
+
+    res.status(200).json(job.applicants);
+});
+
 module.exports = {
     createJob,
     getJobs,
@@ -126,4 +156,5 @@ module.exports = {
     applyForJob,
     deleteJob,
     updateJob,
+    getJobApplicants,
 };

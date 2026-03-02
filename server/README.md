@@ -1,19 +1,20 @@
-# Chat App Backend
+# JobsHub Backend API Server
 
-This is the backend server for the Chat Application, built with Node.js, Express, and MongoDB.
+This is the core backend infrastructure for JobsHub, a professional networking and job aggregation platform. Engineered with Node.js, Express, and MongoDB.
 
-## Features
+## Architecture & Features
 
-*   **Authentication**: JWT-based auth with Login, Register, and Password Reset.
-*   **User Management**: Profile updates, searching, following/unfollowing users.
-*   **Messaging**: Real-time chat with Socket.io, image/video support, and read receipts.
-*   **Posts**: Create, like, and comment on posts with pagination.
-*   **Connections**: Linkedin-style connection request system.
-*   **Search**: Advanced search for users by name, skill, or location.
+*   **Authentication System**: Robust JWT-based authentication featuring Login, multi-step Registration, and secure Password Reset mechanisms.
+*   **Role-Based Access Control (RBAC)**: Enforced authorization isolating actions between *Job Seekers* and *Recruiters*.
+*   **Job & Applicant Tracking**: RESTful endpoints for publishing jobs, submitting applications, and retrieving populated applicant profiles.
+*   **User Modeling & Graphs**: Complex MongoDB schemas modeling user profiles, work experience, education, and mutual follower graphs.
+*   **Real-Time Communications**: Integrated Socket.io server facilitating low-latency messaging, media transfer, and live notifications.
+*   **Content Feed System**: Endpoints for generating, paginating, and interacting (liking/commenting) with community posts.
+*   **Groups Management**: API infrastructure supporting group creation, membership rosters, and localized discussions.
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the root directory configured with:
 
 ```env
 PORT=8000
@@ -25,33 +26,38 @@ BASE_URL=http://localhost:8000
 
 ## Installation & Running
 
-1.  Install dependencies:
+1.  Navigate to the server directory:
+    ```bash
+    cd server
+    ```
+2.  Install dependencies:
     ```bash
     npm install
     ```
-
-2.  Start the development server:
+3.  Start the development server (runs with nodemon):
     ```bash
     npm run dev
     ```
 
-3.  The server will start on `http://localhost:8000` (or your defined PORT).
+The server initializes on `http://localhost:8000` (or defined PORT) and immediately attempts to connect to the MongoDB instance.
 
-## API Endpoints
+## Core API Domains
 
-### Auth
-*   `POST /api/auth/register` - Register a new user
-*   `POST /api/auth/login` - Login user
-*   `GET /api/auth/me` - Get current user profile
+### Auth (`/api/auth`)
+*   `POST /register` - Provision a new user account
+*   `POST /login` - Authenticate and issue JWT
+*   `GET /me` - Retrieve current stateless profile
 
-### Users
-*   `GET /api/users/search` - Search users
-*   `PUT /api/users/profile` - Update profile
-*   `POST /api/users/forgot-password` - Request password reset
-*   `PUT /api/users/reset-password/:token` - Reset password
+### Jobs (`/api/jobs`)
+*   `POST /` - Publish a new job (Recruiter Only)
+*   `POST /:id/apply` - Submit application (Seeker Only)
+*   `GET /:id/applicants` - Fetch applicant roster (Post Author Only)
 
-### Chat
-*   `POST /api/chat` - Access or create chat
-*   `GET /api/chat` - Fetch all chats
-*   `POST /api/message` - Send a message
-*   `GET /api/message/:chatId` - Get messages for a chat
+### Network (`/api/users`)
+*   `POST /follow/:id` - Initiate connection request
+*   `GET /search` - Query professionals by skill, role, or name
+*   `PUT /profile` - Mutate profile metadata
+
+### Communications (`/api/chat` & `/api/message`)
+*   `POST /chat` - Initialize direct messaging channel
+*   `POST /message` - Dispatch message payload (text/media)
