@@ -203,7 +203,7 @@ const Signup = () => {
                             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">How do you want to use JobsHub?</label>
 
                             <div className="space-y-3">
-                                {roles.map((r) => (
+                                {roles?.map((r) => (
                                     <div
                                         key={r._id}
                                         onClick={() => setFormData({ ...formData, role: r._id })}
@@ -308,11 +308,11 @@ const Signup = () => {
             </div>
 
             {/* Right side - Image/Decoration */}
-            <div className="relative hidden w-0 flex-1 lg:block">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 to-blue-600 overflow-hidden">
+            <div className="relative hidden w-0 flex-1 lg:flex flex-col">
+                <div className="relative flex-1 bg-gradient-to-br from-indigo-900 to-blue-600 overflow-hidden flex flex-col justify-center">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')] opacity-20 bg-cover bg-center mix-blend-overlay"></div>
 
-                    <div className="absolute inset-0 flex flex-col justify-center px-16 text-white z-10">
+                    <div className="relative px-16 text-white z-10 w-full">
                         <h2 className="text-4xl font-bold mb-6 max-w-lg leading-tight">
                             Your next chapter starts right here.
                         </h2>
