@@ -1,5 +1,7 @@
 # JobsHub 🚀
 
+**Live Demo:** [https://linkdin-clone-gray.vercel.app](https://linkdin-clone-gray.vercel.app)
+
 **JobsHub** is a premier, full-stack platform designed to bridge the gap between top-tier talent and industry-leading recruiters. It offers a premium, modern alternative to traditional job boards by deeply integrating authentic professional networking with streamlined application tracking.
 
 This repository is structured as a monolithic monorepo containing both the React frontend and the Express/Node backend.
